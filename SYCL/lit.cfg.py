@@ -128,7 +128,7 @@ if not config.sycl_be:
 # Mapping from SYCL_BE backend definition style to SYCL_DEVICE_FILTER used
 # for backward compatibility
 try:
-  config.sycl_be = { 'PI_OPENCL': 'opencl',  'PI_CUDA': 'cuda', 'PI_LEVEL_ZERO': 'level_zero'}[config.sycl_be]
+  config.sycl_be = { 'PI_OPENCL': 'opencl',  'PI_CUDA': 'cuda', 'PI_LEVEL_ZERO': 'level_zero', 'PI_VULKAN': 'vulkan'}[config.sycl_be]
 except:
   # do nothing a we expect that new format of plugin values are used
   pass
@@ -142,10 +142,10 @@ config.substitutions.append( ('%BE_RUN_PLACEHOLDER', "env SYCL_DEVICE_FILTER={SY
 if config.dump_ir_supported:
    config.available_features.add('dump_ir')
 
-if config.sycl_be not in ['host', 'opencl','cuda', 'level_zero']:
+if config.sycl_be not in ['host', 'opencl','cuda', 'level_zero', 'vulkan']:
     lit_config.error("Unknown SYCL BE specified '" +
                      config.sycl_be +
-                     "' supported values are opencl, cuda, level_zero")
+                     "' supported values are opencl, cuda, level_zero, vulkan")
 
 esimd_run_substitute = "env SYCL_DEVICE_FILTER={SYCL_PLUGIN}:gpu SYCL_PROGRAM_COMPILE_OPTIONS=-vc-codegen".format(SYCL_PLUGIN=config.sycl_be)
 config.substitutions.append( ('%ESIMD_RUN_PLACEHOLDER',  esimd_run_substitute) )
@@ -253,6 +253,8 @@ config.substitutions.append( ('%ACC_CHECK_PLACEHOLDER',  acc_check_substitute) )
 
 if config.sycl_be == 'cuda':
     config.substitutions.append( ('%sycl_triple',  "nvptx64-nvidia-cuda-sycldevice" ) )
+elif config.sycl_be == 'vulkan':
+    config.substitutions.append( ('%sycl_triple',  "spir64-vulkan-linux-sycldevice -fsycl-device-code-split=per_kernel" ) )
 else:
     config.substitutions.append( ('%sycl_triple',  "spir64-unknown-linux-sycldevice" ) )
 
